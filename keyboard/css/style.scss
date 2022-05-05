@@ -362,4 +362,16 @@ main {
       font-size: 0.55rem;
     }
   }
+
+  &.btn-func.btn-img span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &.btn-func.btn-img img {
+    width: 80%;
+    height: 80%;
+
+  }
 }

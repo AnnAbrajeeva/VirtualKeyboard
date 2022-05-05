@@ -129,6 +129,8 @@ class Keyboard {
       rows.forEach((key) => {
         const keyValue = lang.find((item) => item.code === key);
         const button = new Key(keyValue);
+        button.button.addEventListener("mousedown", this.mouseClick)
+        button.button.addEventListener("mouseup", this.mouseClick)
 
         this.allKeys.push(button);
         row.append(button.button);
@@ -139,12 +141,55 @@ class Keyboard {
     document.addEventListener("keydown", this.keyPrint);
     document.addEventListener("keyup", this.keyPrint);
 
-    this.keyboardWrapper.addEventListener("mousedown", this.mouseClick);
-    this.keyboardWrapper.addEventListener("mouseup", this.mouseClick);
-
     return this.keyboardWrapper;
   }
 
+
+
+  mouseClick = (e) => {
+    e.stopPropagation()
+    if(e.which === 3) return
+    const btn = e.currentTarget
+    if (!btn) return;
+    const code = btn.dataset.key;
+    if (!code) return;
+    this.keyPrint({ code, type: e.type });
+  };
+
+  keyPrint = (e) => {
+    const pressed = this.allKeys.find((key) => key.code === e.code);
+
+    if (!pressed) return;
+
+    if (e.type === "mousedown") {
+      this.allKeys.forEach((key) => {
+        if (
+          key.button.classList.contains("pressed") &&
+          key.button.classList.contains("on") &&
+          !key.button.classList.contains("btn-func")
+        ) {
+          key.button.classList.remove("pressed");
+          key.button.classList.remove("on");
+        }
+      });
+    }
+
+    if (pressed) {
+      if (e.repeat) {
+        return;
+      }
+
+      if (e.preventDefault) e.preventDefault();
+      if (e.type === "keydown" || e.type === "mousedown") {
+        this.keyDownPress(e, pressed);
+
+        // Отжатие клавиши
+      } else if (e.type === "keyup" || e.type === "mouseup") {
+        this.keyUpPress(e, pressed);
+      }
+    }
+  }; 
+  
   keyDownPress = (e, pressed) => {
     pressed.button.classList.add("pressed");
     pressed.button.classList.add("on");
@@ -244,50 +289,6 @@ class Keyboard {
       removeClass(key, "Alt", this.isAlt);
     });
     pressed.button.classList.remove("pressed");
-    this.keyboardWrapper.addEventListener("mousedown", this.mouseClick);
-  };
-
-  mouseClick = (e) => {
-    if(e.which === 3) return
-    const btn = e.target.closest(".button");
-    if (!btn) return;
-    const code = btn.dataset.key;
-    if (!code) return;
-    this.keyPrint({ code, type: e.type });
-  };
-
-  keyPrint = (e) => {
-    const pressed = this.allKeys.find((key) => key.code === e.code);
-    this.displayWrapper.display.focus();
-    if (!pressed) return;
-
-    if (e.type === "mousedown") {
-      this.allKeys.forEach((key) => {
-        if (
-          key.button.classList.contains("pressed") &&
-          key.button.classList.contains("on") &&
-          !key.button.classList.contains("btn-func")
-        ) {
-          key.button.classList.remove("pressed");
-          key.button.classList.remove("on");
-        }
-      });
-    }
-
-    if (pressed) {
-      if (e.repeat) {
-        return;
-      }
-
-      if (e.preventDefault) e.preventDefault();
-      if (e.type === "keydown" || e.type === "mousedown") {
-        this.keyDownPress(e, pressed);
-
-        // Отжатие клавиши
-      } else if (e.type === "keyup" || e.type === "mouseup") {
-        this.keyUpPress(e, pressed);
-      }
-    }
   };
 
   setSelection(e) {
