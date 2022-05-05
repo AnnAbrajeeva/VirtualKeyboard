@@ -291,7 +291,7 @@ export default [
     },
     {
         small: ' ',
-        big: null,
+        big: ' ',
         code: 'Space'
     },
     {
