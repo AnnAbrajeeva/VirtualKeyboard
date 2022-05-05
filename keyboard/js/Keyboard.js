@@ -4,6 +4,7 @@ import * as storage from "./service/setLocal.js";
 import langs from "./lang/lang.js";
 import removeClass from "./service/removeClass.js";
 import Display from "./Display.js";
+import changeIcon from "./service/changeIcon.js";
 
 class Keyboard {
   constructor() {
@@ -87,6 +88,7 @@ class Keyboard {
     this.isShift = false;
     this.isAlt = false;
     this.isCtrl = false;
+    this.isSoundOn = true
   }
 
   createKeyboardWrapper(lang) {
@@ -148,6 +150,7 @@ class Keyboard {
 
   mouseClick = (e) => {
     e.stopPropagation()
+    this.displayWrapper.display.focus();
     if(e.which === 3) return
     const btn = e.currentTarget
     if (!btn) return;
@@ -193,9 +196,15 @@ class Keyboard {
   keyDownPress = (e, pressed) => {
     pressed.button.classList.add("pressed");
     pressed.button.classList.add("on");
-    this.addSound(e);
 
-    if (e.code.match(/Shift/)) {
+    if(this.isSoundOn) {
+      this.addSound(e);
+    }
+    
+    if(e.code === 'MetaLeft') {
+      this.isSoundOn = !this.isSoundOn
+      changeIcon(this.isSoundOn, this.allKeys)
+    } else if (e.code.match(/Shift/)) {
       this.isShift = !this.isShift;
       if (this.isShift) {
         // Смена регистра

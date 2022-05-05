@@ -21,7 +21,6 @@ class Key {
       this.disableLetter.innerHTML = big;
      
     } else if(big === null && code === 'MetaLeft') {
-      console.log(123)
       this.activeLetter.innerHTML = '<img src="./assets/img/volume.png" alt="volume" />'
       this.button.classList.add("btn-func", "btn-img");
     } else if (big === null && code !== 'Space') {
