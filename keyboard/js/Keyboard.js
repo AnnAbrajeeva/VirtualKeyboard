@@ -84,10 +84,12 @@ class Keyboard {
       ],
     ];
     this.capsLock = false;
-    this.isShift = false;
+    // this.isShift = false;
     this.isAlt = false;
     this.isCtrl = false;
-    this.isSoundOn = true
+    this.isSoundOn = true;
+    this.isLeftShift = false;
+    this.isRightShift = false;
   }
 
   createKeyboardWrapper(lang) {
@@ -130,9 +132,9 @@ class Keyboard {
       rows.forEach((key) => {
         const keyValue = lang.find((item) => item.code === key);
         const button = new Key(keyValue);
-        button.button.addEventListener("mousedown", this.mouseClick)
-        button.button.addEventListener("mouseup", this.mouseClick)
-        button.button.addEventListener("mouseleave", this.mouseClick)
+        button.button.addEventListener("mousedown", this.mouseClick);
+        button.button.addEventListener("mouseup", this.mouseClick);
+        button.button.addEventListener("mouseleave", this.mouseClick);
 
         this.allKeys.push(button);
         row.append(button.button);
@@ -146,13 +148,11 @@ class Keyboard {
     return this.keyboardWrapper;
   }
 
-
-
   mouseClick = (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     this.displayWrapper.display.focus();
-    if(e.which === 3) return
-    const btn = e.currentTarget
+    if (e.which === 3) return;
+    const btn = e.currentTarget;
     if (!btn) return;
     const code = btn.dataset.key;
     if (!code) return;
@@ -187,27 +187,44 @@ class Keyboard {
         this.keyDownPress(e, pressed);
 
         // Отжатие клавиши
-      } else if (e.type === "keyup" || e.type === "mouseup" || e.type === 'mouseleave') {
+      } else if (
+        e.type === "keyup" ||
+        e.type === "mouseup" ||
+        e.type === "mouseleave"
+      ) {
         this.keyUpPress(e, pressed);
       }
     }
-  }; 
-  
+  };
+
   keyDownPress = (e, pressed) => {
     pressed.button.classList.add("pressed");
     pressed.button.classList.add("on");
 
-    if(this.isSoundOn) {
+    if (this.isSoundOn) {
       this.addSound(e);
     }
-    
-    if(e.code === 'MetaLeft') {
-      this.isSoundOn = !this.isSoundOn
-      changeIcon(this.isSoundOn, this.allKeys)
-    } else if (e.code.match(/Shift/)) {
-      this.isShift = !this.isShift;
-      if (this.isShift) {
 
+    if (e.code === "MetaLeft") {
+      this.isSoundOn = !this.isSoundOn;
+      changeIcon(this.isSoundOn, this.allKeys);
+    }
+
+    if (e.code === "ShiftLeft") {
+      this.isLeftShift = !this.isLeftShift;
+      if (this.isLeftShift) {
+        // Смена регистра
+        this.changeRegister(e);
+        pressed.button.classList.add("on");
+      } else {
+        pressed.button.classList.remove("on");
+        this.changeRegister(e);
+      }
+    }
+
+    if (e.code === "ShiftRight") {
+      this.isRightShift = !this.isRightShift;
+      if (this.isRightShift) {
         // Смена регистра
         this.changeRegister(e);
         pressed.button.classList.add("on");
@@ -235,22 +252,35 @@ class Keyboard {
     }
 
     // Смена языка
-    if (e.code.match(/Alt/) && this.isShift) {
+    if (e.code.match(/Alt/) && (this.isLeftShift || this.isRightShift)) {
       this.changeLang();
-      this.isShift = false;
+      this.isLeftShift = this.isLeftShift
+        ? !this.isLeftShift
+        : this.isLeftShift;
+      this.isRightShift = this.isRightShift
+        ? !this.isRightShift
+        : this.isRightShift;
       this.isAlt = false;
       this.changeRegister();
     }
-    if (e.code.match(/Shift/) && this.isAlt) {
+    if ((this.isLeftShift || this.isRightShift) && this.isAlt) {
       this.changeLang();
-      this.isShift = false;
+      this.isLeftShift = this.isLeftShift
+        ? !this.isLeftShift
+        : this.isLeftShift;
+      this.isRightShift = this.isRightShift
+        ? !this.isRightShift
+        : this.isRightShift;
       this.isAlt = false;
       this.changeRegister();
     }
 
     if (!this.capsLock) {
-      this.printLetter(pressed, this.isShift ? pressed.big : pressed.small);
-    } else if (this.isShift) {
+      this.printLetter(
+        pressed,
+        this.isLeftShift || this.isRightShift ? pressed.big : pressed.small
+      );
+    } else if (this.isLeftShift || this.isRightShift) {
       this.changeRegister();
       this.printLetter(
         pressed,
@@ -263,7 +293,7 @@ class Keyboard {
       );
     }
 
-    if (this.isShift && e.code.match(/Arrow/)) {
+    if ((this.isLeftShift || this.isRightShift) && e.code.match(/Arrow/)) {
       this.setSelection(e);
     }
   };
@@ -276,7 +306,8 @@ class Keyboard {
         e.code === "AltLeft" ||
         e.code === "AltRight"
       ) {
-        this.isShift = false;
+        this.isLeftShift = false;
+        this.isRightShift = false;
         this.isAlt = false;
         this.changeRegister();
         pressed.button.classList.remove("on");
@@ -295,7 +326,8 @@ class Keyboard {
     }
 
     this.allKeys.forEach((key) => {
-      removeClass(key, "Shift", this.isShift);
+      removeClass(key, "ShiftLeft", this.isLeftShift);
+      removeClass(key, "ShiftRight", this.isRightShift);
       removeClass(key, "Alt", this.isAlt);
     });
     pressed.button.classList.remove("pressed");
@@ -341,8 +373,8 @@ class Keyboard {
         key.disableLetter.innerHTML = "";
       } else {
         key.activeLetter.innerHTML = button.small;
-        key.activeLetter.classList.remove('disable')
-        key.activeLetter.classList.add('active')
+        key.activeLetter.classList.remove("disable");
+        key.activeLetter.classList.add("active");
         key.disableLetter.innerHTML = "";
       }
     });
@@ -352,7 +384,7 @@ class Keyboard {
     this.allKeys.forEach((k) => {
       const key = k;
 
-      if (this.isShift) {
+      if (this.isLeftShift || this.isRightShift) {
         if (key.big !== null && !key.small.match(/^[a-zA-Zа-яА-ЯёЁ]/)) {
           key.disableLetter.classList.remove("disable");
           key.disableLetter.classList.add("active");
@@ -366,7 +398,7 @@ class Keyboard {
         }
       }
 
-      if (!this.isShift) {
+      if (!this.isLeftShift && !this.isRightShift) {
         if (key.big !== null && !key.small.match(/^[a-zA-Zа-яА-ЯёЁ]/)) {
           key.disableLetter.classList.remove("active");
           key.disableLetter.classList.add("disable");
@@ -380,11 +412,11 @@ class Keyboard {
         }
       }
 
-      if (this.capsLock && !this.isShift) {
+      if (this.capsLock && !this.isLeftShift && !this.isRightShift) {
         if (key.big !== null && key.small.match(/^[a-zA-Zа-яА-ЯёЁ]/)) {
           key.activeLetter.innerHTML = key.big;
         }
-      } else if (this.capsLock && this.isShift) {
+      } else if (this.capsLock && (this.isLeftShift || this.isRightShift)) {
         if (key.big !== null && key.small.match(/^[a-zA-Zа-яА-ЯёЁ]/)) {
           key.activeLetter.innerHTML = key.small;
         }
@@ -421,49 +453,54 @@ class Keyboard {
     const firstPart = this.displayWrapper.display.value.slice(0, posCursor);
     const secondPart = this.displayWrapper.display.value.slice(posCursor);
 
-    if (value.button.classList.contains("btn-func") || value.code === 'Space') {
-      let selection
-      if((this.displayWrapper.display.selectionStart === this.displayWrapper.display.selectionEnd)) {
-        selection = null
-     
+    if (value.button.classList.contains("btn-func") || value.code === "Space") {
+      let selection;
+      if (
+        this.displayWrapper.display.selectionStart ===
+        this.displayWrapper.display.selectionEnd
+      ) {
+        selection = null;
       } else {
-        selection = this.displayWrapper.display.value.slice(this.displayWrapper.display.selectionStart, this.displayWrapper.display.selectionEnd)  
+        selection = this.displayWrapper.display.value.slice(
+          this.displayWrapper.display.selectionStart,
+          this.displayWrapper.display.selectionEnd
+        );
       }
       switch (value.code) {
         case "Tab":
-          if(selection) {
-            this.displayWrapper.display.setRangeText(selection = '\t')
+          if (selection) {
+            this.displayWrapper.display.setRangeText((selection = "\t"));
           } else {
-            this.displayWrapper.display.value = `${firstPart}\t${secondPart}`
+            this.displayWrapper.display.value = `${firstPart}\t${secondPart}`;
           }
           posCursor += 1;
           break;
 
-        case "Space":   
-          if(selection) {    
-            this.displayWrapper.display.setRangeText(selection = ' ')
-          } else { 
-            this.displayWrapper.display.value = `${firstPart} ${secondPart}`
+        case "Space":
+          if (selection) {
+            this.displayWrapper.display.setRangeText((selection = " "));
+          } else {
+            this.displayWrapper.display.value = `${firstPart} ${secondPart}`;
           }
           posCursor += 1;
           break;
 
         case "Backspace":
-          if(selection) {    
-            this.displayWrapper.display.setRangeText(selection = '')
-          } else { 
+          if (selection) {
+            this.displayWrapper.display.setRangeText((selection = ""));
+          } else {
             this.displayWrapper.display.value =
-            firstPart.slice(0, -1) + secondPart;
+              firstPart.slice(0, -1) + secondPart;
             posCursor -= 1;
-          } 
+          }
           break;
 
         case "Delete":
-          if(selection) {    
-            this.displayWrapper.display.setRangeText(selection = '')
-          } else { 
+          if (selection) {
+            this.displayWrapper.display.setRangeText((selection = ""));
+          } else {
             this.displayWrapper.display.value = firstPart + secondPart.slice(1);
-          } 
+          }
           break;
 
         case "ArrowLeft":
@@ -475,11 +512,20 @@ class Keyboard {
           break;
 
         case "ArrowUp":
-          posCursor = 0;
+          {
+            const text = firstPart.split("\n");
+            let row = text.length - 1;
+            posCursor -= text[row].length + 1;
+            row -= 1;
+          }
           break;
 
         case "ArrowDown":
-          posCursor = this.displayWrapper.display.value.length;
+          {
+            const text = secondPart.split("\n");
+            const row = text.length - (text.length-1);
+            posCursor += text[row].length+1;
+          }
           break;
 
         case "Enter":
