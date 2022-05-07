@@ -515,16 +515,22 @@ class Keyboard {
           {
             const text = firstPart.split("\n");
             let row = text.length - 1;
-            posCursor -= text[row].length + 1;
-            row -= 1;
+            if (row >= 1) {
+              posCursor -= text[row].length + 1;
+              row -= 1;
+            }
           }
           break;
 
         case "ArrowDown":
           {
             const text = secondPart.split("\n");
-            const row = text.length - (text.length-1);
-            posCursor += text[row].length+1;
+            const row = text.length - (text.length - 1);
+            if (text[row]) {
+              posCursor += text[row].length + 1;
+            } else {
+              return;
+            }
           }
           break;
 
