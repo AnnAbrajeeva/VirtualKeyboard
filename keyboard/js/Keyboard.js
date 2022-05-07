@@ -1,4 +1,3 @@
-/* eslint-disable import/extensions */
 import Key from "./Key.js";
 import * as storage from "./service/setLocal.js";
 import langs from "./lang/lang.js";
@@ -133,6 +132,7 @@ class Keyboard {
         const button = new Key(keyValue);
         button.button.addEventListener("mousedown", this.mouseClick)
         button.button.addEventListener("mouseup", this.mouseClick)
+        button.button.addEventListener("mouseleave", this.mouseClick)
 
         this.allKeys.push(button);
         row.append(button.button);
@@ -187,7 +187,7 @@ class Keyboard {
         this.keyDownPress(e, pressed);
 
         // Отжатие клавиши
-      } else if (e.type === "keyup" || e.type === "mouseup") {
+      } else if (e.type === "keyup" || e.type === "mouseup" || e.type === 'mouseleave') {
         this.keyUpPress(e, pressed);
       }
     }
@@ -207,6 +207,7 @@ class Keyboard {
     } else if (e.code.match(/Shift/)) {
       this.isShift = !this.isShift;
       if (this.isShift) {
+
         // Смена регистра
         this.changeRegister(e);
         pressed.button.classList.add("on");
@@ -340,6 +341,8 @@ class Keyboard {
         key.disableLetter.innerHTML = "";
       } else {
         key.activeLetter.innerHTML = button.small;
+        key.activeLetter.classList.remove('disable')
+        key.activeLetter.classList.add('active')
         key.disableLetter.innerHTML = "";
       }
     });
@@ -418,26 +421,49 @@ class Keyboard {
     const firstPart = this.displayWrapper.display.value.slice(0, posCursor);
     const secondPart = this.displayWrapper.display.value.slice(posCursor);
 
-    if (value.button.classList.contains("btn-func")) {
+    if (value.button.classList.contains("btn-func") || value.code === 'Space') {
+      let selection
+      if((this.displayWrapper.display.selectionStart === this.displayWrapper.display.selectionEnd)) {
+        selection = null
+     
+      } else {
+        selection = this.displayWrapper.display.value.slice(this.displayWrapper.display.selectionStart, this.displayWrapper.display.selectionEnd)  
+      }
       switch (value.code) {
         case "Tab":
-          this.displayWrapper.display.value = `${firstPart}\t${secondPart}`;
+          if(selection) {
+            this.displayWrapper.display.setRangeText(selection = '\t')
+          } else {
+            this.displayWrapper.display.value = `${firstPart}\t${secondPart}`
+          }
           posCursor += 1;
           break;
 
-        case "Space":
-          this.displayWrapper.display.value = `${firstPart} ${secondPart}`;
+        case "Space":   
+          if(selection) {    
+            this.displayWrapper.display.setRangeText(selection = ' ')
+          } else { 
+            this.displayWrapper.display.value = `${firstPart} ${secondPart}`
+          }
           posCursor += 1;
           break;
 
         case "Backspace":
-          this.displayWrapper.display.value =
+          if(selection) {    
+            this.displayWrapper.display.setRangeText(selection = '')
+          } else { 
+            this.displayWrapper.display.value =
             firstPart.slice(0, -1) + secondPart;
-          posCursor -= 1;
+            posCursor -= 1;
+          } 
           break;
 
         case "Delete":
-          this.displayWrapper.display.value = firstPart + secondPart.slice(1);
+          if(selection) {    
+            this.displayWrapper.display.setRangeText(selection = '')
+          } else { 
+            this.displayWrapper.display.value = firstPart + secondPart.slice(1);
+          } 
           break;
 
         case "ArrowLeft":

@@ -14,5 +14,6 @@
         "requireConfigFile": false
     },
     "rules": {
+        "import/extensions": ["error", "always"]
     }   
 }
