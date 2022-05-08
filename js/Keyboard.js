@@ -196,6 +196,7 @@ class Keyboard {
     }
   };
 
+  //Нажатие клавиши
   keyDownPress = (e, pressed) => {
     pressed.button.classList.add("pressed");
     pressed.button.classList.add("on");
