@@ -84,7 +84,6 @@ class Keyboard {
       ],
     ];
     this.capsLock = false;
-    // this.isShift = false;
     this.isAlt = false;
     this.isCtrl = false;
     this.isSoundOn = true;
