@@ -185,7 +185,6 @@ class Keyboard {
       if (e.type === "keydown" || e.type === "mousedown") {
         this.keyDownPress(e, pressed);
 
-        // Отжатие клавиши
       } else if (
         e.type === "keyup" ||
         e.type === "mouseup" ||
@@ -212,7 +211,6 @@ class Keyboard {
     if (e.code === "ShiftLeft") {
       this.isLeftShift = !this.isLeftShift;
       if (this.isLeftShift) {
-        // Смена регистра
         this.changeRegister(e);
         pressed.button.classList.add("on");
       } else {
@@ -224,7 +222,6 @@ class Keyboard {
     if (e.code === "ShiftRight") {
       this.isRightShift = !this.isRightShift;
       if (this.isRightShift) {
-        // Смена регистра
         this.changeRegister(e);
         pressed.button.classList.add("on");
       } else {
@@ -250,7 +247,6 @@ class Keyboard {
       this.changeRegister();
     }
 
-    // Смена языка
     if (e.code.match(/Alt/) && (this.isLeftShift || this.isRightShift)) {
       this.changeLang();
       this.isLeftShift = this.isLeftShift
