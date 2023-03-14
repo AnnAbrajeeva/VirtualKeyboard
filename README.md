@@ -16,7 +16,6 @@
 
 ### Stack
 
-* typescript
 * usage of ES6+ features (classes, property destructuring, etc)
 * webpack
 * eslint
